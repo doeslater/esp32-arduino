@@ -26,8 +26,9 @@ quirks — see [`reference.md`](reference.md) for what's confirmed vs. what diff
 - Keeps a running, append-only `.esp32/NOTES.md` in your project so tips and lessons
   from past sessions are there for you to reread later.
 - Offers to drop a standalone `run_<Sketch>.sh` script into your project, with
-  `upload` / `monitor` / `check` subcommands (or a menu if run with no args), so you
-  can flash and watch serial output without going through Claude each time.
+  `devices` / `upload` / `monitor` / `check` subcommands (or a menu if run with no
+  args), so you can flash, watch serial output, and check what's connected
+  without going through Claude each time.
 
 ## Install
 
@@ -85,7 +86,7 @@ Arduino, or Anthropic.
 
 ## Version
 
-0.2.2 — see [CHANGELOG.md](CHANGELOG.md).
+0.2.3 — see [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

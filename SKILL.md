@@ -1,6 +1,6 @@
 ---
 name: esp32-arduino
-version: 0.2.2
+version: 0.2.3
 description: >
   Build, flash, and debug ESP32 .ino sketches with arduino-cli, including first-time
   environment setup. Trigger on build/upload/setup intent for an ESP32 project —
@@ -112,14 +112,21 @@ The script:
 - Locates `.esp32/config.json` by walking upward from `$dir` (checking each
   parent directory in turn) rather than assuming a fixed depth, since the
   sketch folder isn't always a direct child of the project root — the same
-  "search upward" approach tools like `git` use to find `.git`.
+  "search upward" approach tools like `git` use to find `.git`. This lookup
+  (and failing if it's not found) only happens for the subcommands that need
+  it — `upload`/`monitor`/`check` — not for `devices`, which runs before any
+  config lookup and works even without a `.esp32/config.json` present.
 - Re-reads `fqbn`, `port`, and `monitorBaud` from `.esp32/config.json` on every
   run via `grep`+`sed` — never bakes those values in at generation time. No
   `jq`/`python3` dependency: the config format is fully controlled by this
   skill, so simple line-based extraction is safe. This also means a port Claude
   re-resolves later is picked up automatically, with no need to regenerate the
   script.
-- Exposes three subcommands:
+- Exposes four subcommands:
+  - `devices` — `arduino-cli board list`. Needs no config values at all, so
+    it's the one subcommand that still works even if `port`/`fqbn` are stale
+    or `.esp32/config.json` can't be found — useful for checking what's
+    actually connected before troubleshooting anything else.
   - `upload` — compile, then only on success, upload:
     `arduino-cli compile --fqbn <fqbn> "$dir"` then
     `arduino-cli upload -p <port> --fqbn <fqbn> "$dir"`. A thin wrapper — it
@@ -138,9 +145,10 @@ The script:
 - Bare invocation (no args) shows a numbered menu with one-line explanations;
   invalid args or `-h`/`--help` print the same lines as usage text:
   ```
-  1) Upload   - compile the sketch and flash it to the device
-  2) Monitor  - open a live serial connection (Ctrl+C to exit)
-  3) Check    - read the serial port for 10s, then stop (quick sanity check)
+  1) Devices  - list connected boards/ports (arduino-cli board list)
+  2) Upload   - compile the sketch and flash it to the device
+  3) Monitor  - open a live serial connection (Ctrl+C to exit)
+  4) Check    - read the serial port for 10s, then stop (quick sanity check)
   ```
 
 ## Doing the work

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.3 — 2026-07-09
+
+- `run_<Sketch>.sh` gains a fourth subcommand, `devices` (`arduino-cli board
+  list`). It needs no config values and runs before any `.esp32/config.json`
+  lookup, so it still works even if the port is stale or the config can't be
+  found — useful for checking what's connected before troubleshooting
+  anything else. Added to the menu as the first option.
+
 ## 0.2.2 — 2026-07-09
 
 - New tip: recognize a sketch that only prints at boot or on rare events (e.g.
