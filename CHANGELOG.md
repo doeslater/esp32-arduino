@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.2 — 2026-07-09
+
+- New tip: recognize a sketch that only prints at boot or on rare events (e.g.
+  a web-server request handler) — `monitor`/`check` shows nothing once that
+  one-time window has passed. Suggest a `millis()`-based heartbeat print in
+  `loop()` (not `delay()`, which would block other work `loop()` needs to do)
+  so there's always live output to confirm the board is alive. Found via a
+  real case (a WiFi Morse server sketch that only logged on boot and on form
+  submission).
+
 ## 0.2.1 — 2026-07-09
 
 - Fixed: `run_<Sketch>.sh` is now generated inside the sketch's own folder,

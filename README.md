@@ -85,7 +85,7 @@ Arduino, or Anthropic.
 
 ## Version
 
-0.2.1 — see [CHANGELOG.md](CHANGELOG.md).
+0.2.2 — see [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

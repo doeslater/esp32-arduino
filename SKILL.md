@@ -1,6 +1,6 @@
 ---
 name: esp32-arduino
-version: 0.2.1
+version: 0.2.2
 description: >
   Build, flash, and debug ESP32 .ino sketches with arduino-cli, including first-time
   environment setup. Trigger on build/upload/setup intent for an ESP32 project —
@@ -238,6 +238,11 @@ compiling or reading a sketch, you notice a specific ESP32-relevant gotcha:
 - Deprecated Arduino-core APIs for this board.
 - A software-driven pattern (e.g. manual bit-banging) where a hardware peripheral
   (PWM/RTC/timer) would be simpler or more efficient.
+- A sketch that only prints at boot or on rare events (e.g. a web-server request
+  handler) — `monitor`/`check` will show nothing if that one-time window already
+  passed. Suggest a `millis()`-based heartbeat print in `loop()` (not `delay()`,
+  which would block request handling or anything else `loop()` needs to keep
+  doing) so there's always live output to confirm the board is alive.
 
 Scope this strictly to ESP32-specific knowledge — this is not a general code
 reviewer or linter, and don't recommend "better libraries" speculatively; only
