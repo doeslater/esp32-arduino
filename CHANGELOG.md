@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 — 2026-07-09
+
+- Fixed: `run_<Sketch>.sh` is now generated inside the sketch's own folder,
+  alongside its `.ino` file (e.g. `Blink/run_Blink.sh`), not the project root.
+  The script's `$dir` is therefore the sketch directory itself, and it locates
+  `.esp32/config.json` by walking upward from there rather than assuming a
+  fixed relative depth.
+- The `monitor` subcommand now passes `--timestamp` to `arduino-cli monitor`,
+  prefixing each incoming serial line with a timestamp.
+
 ## 0.2.0 — 2026-07-09
 
 - Onboarding step 7: offer (never auto-create) to generate `run_<Sketch>.sh`, a

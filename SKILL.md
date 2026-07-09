@@ -1,6 +1,6 @@
 ---
 name: esp32-arduino
-version: 0.2.0
+version: 0.2.1
 description: >
   Build, flash, and debug ESP32 .ino sketches with arduino-cli, including first-time
   environment setup. Trigger on build/upload/setup intent for an ESP32 project —
@@ -74,9 +74,10 @@ Ask nothing you can detect. Ask exactly what you can't.
 
 7. **Offer to generate a run script.** Ask — never auto-create — e.g. "want me to
    drop a script here so you can upload/monitor without going through me each
-   time?" Default recommendation: yes. If accepted, write `run_<Sketch>.sh` to the
-   project root (see below) and `chmod +x` it. If declined, skip; this can be
-   revisited later on explicit request, same as any other reconfiguration.
+   time?" Default recommendation: yes. If accepted, write `run_<Sketch>.sh` into
+   the sketch's own folder, alongside its `.ino` file (see below), and `chmod +x`
+   it. If declined, skip; this can be revisited later on explicit request, same
+   as any other reconfiguration.
 
 ### Config schema (`.esp32/config.json`)
 
@@ -94,19 +95,24 @@ Ask nothing you can detect. Ask exactly what you can't.
 
 ### Generated script (`run_<Sketch>.sh`)
 
-If step 7 is accepted, generate `run_<SketchBaseName>.sh` in the project root,
-named after the currently active sketch (e.g. `run_Blink.sh` for
-`Blink/Blink.ino`). **One script per sketch** — if the active sketch later
-changes and the user asks for a script again, generate a new
-`run_<NewSketch>.sh` alongside it; never rename or delete a script generated for
-another sketch. Commit it (don't gitignore it) — unlike `.esp32/config.json`, it
-holds no machine-specific values.
+If step 7 is accepted, generate `run_<SketchBaseName>.sh` **inside the sketch's
+own folder**, alongside its `.ino` file — e.g. `Blink/run_Blink.sh` for
+`Blink/Blink.ino`, not the project root. **One script per sketch** — each
+sketch folder gets its own, generated independently; never rename or delete a
+script that already exists in another sketch's folder. Commit it (don't
+gitignore it) — unlike `.esp32/config.json`, it holds no machine-specific
+values.
 
 The script:
 
 - Resolves its own directory (`dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &&
-  pwd)"`) and reads `.esp32/config.json` relative to that directory, not the
-  caller's cwd, so it works no matter where it's invoked from.
+  pwd)"`). Because the script lives in the sketch folder, `$dir` *is* the
+  sketch directory — compile/upload run directly against it, no separate
+  lookup needed for which sketch this script belongs to.
+- Locates `.esp32/config.json` by walking upward from `$dir` (checking each
+  parent directory in turn) rather than assuming a fixed depth, since the
+  sketch folder isn't always a direct child of the project root — the same
+  "search upward" approach tools like `git` use to find `.git`.
 - Re-reads `fqbn`, `port`, and `monitorBaud` from `.esp32/config.json` on every
   run via `grep`+`sed` — never bakes those values in at generation time. No
   `jq`/`python3` dependency: the config format is fully controlled by this
@@ -115,12 +121,13 @@ The script:
   script.
 - Exposes three subcommands:
   - `upload` — compile, then only on success, upload:
-    `arduino-cli compile --fqbn <fqbn> <sketch-dir>` then
-    `arduino-cli upload -p <port> --fqbn <fqbn> <sketch-dir>`. A thin wrapper —
-    it shows the commands and lets arduino-cli's own exit code/output speak; it
+    `arduino-cli compile --fqbn <fqbn> "$dir"` then
+    `arduino-cli upload -p <port> --fqbn <fqbn> "$dir"`. A thin wrapper — it
+    shows the commands and lets arduino-cli's own exit code/output speak; it
     does not attempt the smart error diagnosis (missing-library,
     partition-overflow) that the Claude-driven flow does.
-  - `monitor` — live `arduino-cli monitor -p <port> -c baudrate=<monitorBaud>`,
+  - `monitor` — live `arduino-cli monitor -p <port> -c baudrate=<monitorBaud>
+    --timestamp` (`--timestamp` prefixes each incoming line with a timestamp),
     blocking until the user exits. Unlike `check` below, this can run live
     because the script executes in the user's own terminal with a real TTY — the
     constraint that forces the bounded workaround (see "Monitor" below) only
