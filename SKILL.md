@@ -1,6 +1,6 @@
 ---
 name: esp32-arduino
-version: 0.1.0
+version: 0.2.0
 description: >
   Build, flash, and debug ESP32 .ino sketches with arduino-cli, including first-time
   environment setup. Trigger on build/upload/setup intent for an ESP32 project —
@@ -72,6 +72,12 @@ Ask nothing you can detect. Ask exactly what you can't.
 
 6. **Write `.esp32/config.json`** with the resolved values (schema below).
 
+7. **Offer to generate a run script.** Ask — never auto-create — e.g. "want me to
+   drop a script here so you can upload/monitor without going through me each
+   time?" Default recommendation: yes. If accepted, write `run_<Sketch>.sh` to the
+   project root (see below) and `chmod +x` it. If declined, skip; this can be
+   revisited later on explicit request, same as any other reconfiguration.
+
 ### Config schema (`.esp32/config.json`)
 
 ```json
@@ -85,6 +91,50 @@ Ask nothing you can detect. Ask exactly what you can't.
   "learningNotes": true
 }
 ```
+
+### Generated script (`run_<Sketch>.sh`)
+
+If step 7 is accepted, generate `run_<SketchBaseName>.sh` in the project root,
+named after the currently active sketch (e.g. `run_Blink.sh` for
+`Blink/Blink.ino`). **One script per sketch** — if the active sketch later
+changes and the user asks for a script again, generate a new
+`run_<NewSketch>.sh` alongside it; never rename or delete a script generated for
+another sketch. Commit it (don't gitignore it) — unlike `.esp32/config.json`, it
+holds no machine-specific values.
+
+The script:
+
+- Resolves its own directory (`dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &&
+  pwd)"`) and reads `.esp32/config.json` relative to that directory, not the
+  caller's cwd, so it works no matter where it's invoked from.
+- Re-reads `fqbn`, `port`, and `monitorBaud` from `.esp32/config.json` on every
+  run via `grep`+`sed` — never bakes those values in at generation time. No
+  `jq`/`python3` dependency: the config format is fully controlled by this
+  skill, so simple line-based extraction is safe. This also means a port Claude
+  re-resolves later is picked up automatically, with no need to regenerate the
+  script.
+- Exposes three subcommands:
+  - `upload` — compile, then only on success, upload:
+    `arduino-cli compile --fqbn <fqbn> <sketch-dir>` then
+    `arduino-cli upload -p <port> --fqbn <fqbn> <sketch-dir>`. A thin wrapper —
+    it shows the commands and lets arduino-cli's own exit code/output speak; it
+    does not attempt the smart error diagnosis (missing-library,
+    partition-overflow) that the Claude-driven flow does.
+  - `monitor` — live `arduino-cli monitor -p <port> -c baudrate=<monitorBaud>`,
+    blocking until the user exits. Unlike `check` below, this can run live
+    because the script executes in the user's own terminal with a real TTY — the
+    constraint that forces the bounded workaround (see "Monitor" below) only
+    applies to Claude's own non-interactive shell.
+  - `check` — bounded 10s capture, the same technique used internally: `stty -F
+    <port> <monitorBaud> raw -echo -hupcl; timeout 10 cat <port>`. A quick "did
+    it boot" sanity check.
+- Bare invocation (no args) shows a numbered menu with one-line explanations;
+  invalid args or `-h`/`--help` print the same lines as usage text:
+  ```
+  1) Upload   - compile the sketch and flash it to the device
+  2) Monitor  - open a live serial connection (Ctrl+C to exit)
+  3) Check    - read the serial port for 10s, then stop (quick sanity check)
+  ```
 
 ## Doing the work
 

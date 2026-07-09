@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.0 — 2026-07-09
+
+- Onboarding step 7: offer (never auto-create) to generate `run_<Sketch>.sh`, a
+  standalone helper script committed to the project root, named after the active
+  sketch, one per sketch.
+- The generated script resolves paths relative to its own location and re-reads
+  `fqbn`/`port`/`monitorBaud` from `.esp32/config.json` on every run via
+  `grep`+`sed` (no `jq`/`python3` dependency), so it never goes stale when the
+  port changes.
+- Three subcommands — `upload` (compile then upload), `monitor` (live serial,
+  since the script runs in a real TTY unlike Claude's shell), `check` (bounded
+  10s capture, same technique as the skill's own internal sanity check). Bare
+  invocation shows an explained menu; invalid args or `-h`/`--help` show the same
+  as usage text.
+
 ## 0.1.0 — 2026-07-09
 
 Initial release.

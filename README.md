@@ -25,6 +25,9 @@ quirks — see [`reference.md`](reference.md) for what's confirmed vs. what diff
   successful build.
 - Keeps a running, append-only `.esp32/NOTES.md` in your project so tips and lessons
   from past sessions are there for you to reread later.
+- Offers to drop a standalone `run_<Sketch>.sh` script into your project, with
+  `upload` / `monitor` / `check` subcommands (or a menu if run with no args), so you
+  can flash and watch serial output without going through Claude each time.
 
 ## Install
 
@@ -42,6 +45,16 @@ The first time you ask it to build or flash something in a project, it walks you
 through a short onboarding — board/port detection, code-comment style, tip
 verbosity, and whether to keep a learning-notes file — and saves your answers to
 `.esp32/config.json` in that project so you're not asked again.
+
+## Updating
+
+Skill files are read fresh from disk on every use, so a new version only reaches
+you once the files at your install path actually change:
+
+- **Cloned**: `git pull` inside `~/.claude/skills/esp32-arduino` (or the
+  project-scoped path) to fetch the latest version.
+- **Copied**: there's no update mechanism — re-copy the folder to pick up
+  changes.
 
 ## Tested devices
 
@@ -72,7 +85,7 @@ Arduino, or Anthropic.
 
 ## Version
 
-0.1.0 — see [CHANGELOG.md](CHANGELOG.md).
+0.2.0 — see [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 
