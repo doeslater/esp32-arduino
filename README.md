@@ -43,6 +43,33 @@ through a short onboarding — board/port detection, code-comment style, tip
 verbosity, and whether to keep a learning-notes file — and saves your answers to
 `.esp32/config.json` in that project so you're not asked again.
 
+## Tested devices
+
+- ESP32 DevKitC / WROOM-32, chip ESP32-D0WD-V3 (revision v3.1) — compile, upload, and
+  serial capture confirmed working end-to-end against real hardware.
+
+No other board has been tested. S2/S3/C3 and other ESP32 variants are not confirmed —
+see [`reference.md`](reference.md) for what's known to differ. If you test this
+skill against another board, opening an issue or PR with the result is welcome.
+
+## Disclaimer
+
+This skill flashes firmware to physical hardware based on its own judgment of your
+intent and the state of your project. It is provided **as-is, with no warranty**
+(see [LICENSE](LICENSE)) — use it at your own risk. Incorrect wiring, incorrect
+voltage, or firmware that misuses a boot-strapping pin can damage a board or
+anything connected to it; this skill reduces some common mistakes but cannot
+guarantee your specific hardware setup is safe. You are responsible for reviewing
+what it's about to do (which it always shows before doing it) and for your own
+hardware. This project is not affiliated with or endorsed by Espressif Systems,
+Arduino, or Anthropic.
+
+## Topics
+
+`esp32` `arduino` `arduino-cli` — the hardware/toolchain this skill targets.
+`claude-code` `claude-code-skill` — it's a Claude Code skill, not a standalone tool.
+`embedded` `iot` `microcontroller` — the broader category of work it's for.
+
 ## Version
 
 0.1.0 — see [CHANGELOG.md](CHANGELOG.md).
